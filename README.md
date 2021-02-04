@@ -7,3 +7,5 @@ Choose a scenario which you want to remove stats from.
 Choose if the scores should be above/below the threshold.  
 Press "Delete".  
 To exit the program press "Exit"  
+
+DM Yondaime#1370 on Discord for help.
