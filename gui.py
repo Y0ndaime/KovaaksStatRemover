@@ -28,6 +28,9 @@ class Gui:
 
     def browse_path(self):
         self.path.set(filedialog.askdirectory(initialdir=self.path.get(), title="Open Stats Folder"))
+        self.config["stats_path"] = self.path.get()
+        with open('config.json', 'w', encoding='utf-8') as f:
+            json.dump(self.config, f, ensure_ascii=False, indent=4)
 
     def main(self):
         # Gui for path
@@ -73,10 +76,12 @@ class Gui:
 
         # Finished/Exit buttons
         finished_frame = Frame(self.window)
-        delete_button = Button(finished_frame, command=self.delete_score, text="Delete")
+        delete_button = Button(finished_frame, command=self.delete_score, text="Delete scores")
         delete_button.grid(row="1", column="0", columnspan="2")
-        finished_button = Button(finished_frame, command=self.exit, text="Finish")
+        finished_button = Button(finished_frame, command=self.exit, text="Finish the program")
         finished_button.grid(row="1", column="2", columnspan="2")
+        delete_empty_button = Button(finished_frame, command=self.del_empty, text="Fix NUL Bytes")
+        delete_empty_button.grid(row="2", column="1", columnspan="2")
 
         # Message Label
         message_frame = Frame(self.window)
@@ -112,6 +117,19 @@ class Gui:
                         os.remove(f'{config["stats_path"]}/{file}')
                         counter += 1
         self.message_label.config(text=f'Just deleted {counter} {self.scenario.get()} stats.')
+
+    def del_empty(self):
+        self.message_label.config(text="Checking for NUL Bytes, this can take a while...")
+        for file in self.all_stats:
+            path_to_file = os.path.join(self.path.get(), file)
+            fi = open(path_to_file, 'rb')
+            data = fi.read()
+            fi.close()
+            if b"\x00" in data:
+                os.remove(path_to_file)
+            elif os.path.getsize(path_to_file) < 100:
+                os.remove(path_to_file)
+        self.message_label.config(text="Finished cleaning files")
 
     def exit(self):
         self.config["stats_path"] = self.path.get()
